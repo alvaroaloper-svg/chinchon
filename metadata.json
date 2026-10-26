@@ -1,0 +1,6 @@
+{
+  "name": "Chinchón - Juego de Cartas Español Multijugador",
+  "description": "Juego de cartas Chinchón tradicional con baraja española, multijugador online en tiempo real con salas privadas y bots opcionales.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

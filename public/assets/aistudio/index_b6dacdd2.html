@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Chinchón</title>
+<style>
+:root{--felt:#1d5a3a;--felt2:#0f3b25;--ink:#1c1712;--paper:#fbf6ea;--gold:#e3b04b;--red:#c4372b;--blue:#2c5aa0;--green:#2f7d3a}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{font:16px/1.4 Georgia,"Times New Roman",serif;color:var(--paper);background:radial-gradient(ellipse at 50% 30%,var(--felt),var(--felt2));padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+h1{font-size:clamp(44px,12vw,84px);margin:0;letter-spacing:.02em;font-style:italic;color:var(--gold);text-shadow:0 3px 0 #0006}
+button,input,select{font:inherit;border-radius:10px;border:2px solid #0004;padding:10px 14px}
+button{background:var(--gold);color:var(--ink);font-weight:700;cursor:pointer}button:disabled{opacity:.35;cursor:default}
+button.sec{background:#fff2;color:var(--paper);border-color:#fff4}
+input,select{background:var(--paper);color:var(--ink)}
+.scr{display:none;min-height:100%;padding:16px;max-width:900px;margin:auto;flex-direction:column;gap:14px}.scr.on{display:flex}
+.box{background:#0003;border:1px solid #fff2;border-radius:14px;padding:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#code{font:700 40px monospace;letter-spacing:.25em;color:var(--gold)}
+#toast{position:fixed;left:50%;top:12px;transform:translateX(-50%);background:var(--red);padding:10px 16px;border-radius:10px;display:none;z-index:9;max-width:90vw}
+#cn{position:fixed;right:10px;bottom:10px;font-size:13px;padding:3px 10px;border-radius:99px;background:var(--red);z-index:5}#cn.on{background:var(--green)}
+.pl{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #fff2}
+.off{opacity:.5}
+/* mesa */
+#opp{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.o{padding:8px 14px;border-radius:12px;background:#0004;border:2px solid transparent;text-align:center;min-width:110px}
+.o.t{border-color:var(--gold);box-shadow:0 0 18px var(--gold)}.o.x{opacity:.4;text-decoration:line-through}
+#mid{display:flex;gap:28px;justify-content:center;align-items:center;margin:8px 0}
+.c{width:min(11vw,66px);aspect-ratio:2/3;background:var(--paper);color:var(--ink);border-radius:8px;border:1px solid #0006;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:4px 2px;font:700 clamp(14px,4vw,22px) Georgia,serif;cursor:pointer;box-shadow:0 3px 6px #0006;transition:transform .12s;user-select:none}
+.c b{font-size:clamp(20px,7vw,34px);line-height:1}
+.s0{color:#a77a0a}.s1{color:var(--red)}.s2{color:var(--blue)}.s3{color:var(--green)}
+.c.sel{transform:translateY(-14px);outline:3px solid var(--gold)}
+.c.new{animation:pop .35s}@keyframes pop{from{transform:translateY(-60px) scale(.6);opacity:0}}
+.c.big{width:min(18vw,90px);cursor:default}
+.back{background:repeating-linear-gradient(45deg,#7a1f1f,#7a1f1f 6px,#5a1414 6px,#5a1414 12px);border:3px solid var(--paper)}
+#msg{text-align:center;font-size:20px;min-height:30px;font-style:italic;color:var(--gold)}
+#hand{display:flex;gap:4px;justify-content:center;padding:18px 0 4px}
+#acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+#logp{font-size:13px;opacity:.85;text-align:center}
+dialog{background:var(--paper);color:var(--ink);border-radius:14px;max-width:560px;border:0;padding:20px}
+#res{position:fixed;inset:0;background:#000b;display:none;overflow:auto;padding:14px;z-index:6}#res>div{max-width:640px;margin:auto;background:var(--felt2);border:2px solid var(--gold);border-radius:14px;padding:14px}
+.m{display:inline-flex;gap:2px;margin:2px 6px 2px 0;padding:2px;border:2px solid var(--gold);border-radius:8px}.m .c{width:34px;font-size:13px;cursor:default;box-shadow:none}.m .c b{font-size:16px}
+@media (prefers-reduced-motion:reduce){.c.new{animation:none}}
+</style></head><body>
+<div id="toast"></div><div id="cn">Sin conexión</div>
+
+<section class="scr on" id="home" style="justify-content:center;text-align:center">
+ <h1>Chinchón</h1><p>Baraja española, partidas privadas con código, hasta 4 jugadores.</p>
+ <div class="box" style="display:grid;gap:10px">
+  <input id="nm" placeholder="Tu nombre" maxlength="14" autocomplete="nickname">
+  <button id="bc">Crear partida</button>
+  <div class="row" style="justify-content:center"><input id="cd" placeholder="Código" maxlength="8" style="width:140px;text-transform:uppercase"><button id="bj">Unirse a una partida</button></div>
+  <button class="sec" onclick="rules.showModal()">Reglas e instrucciones</button>
+ </div>
+</section>
+
+<section class="scr" id="lobby">
+ <div class="box"><div>Código de la partida</div><div class="row"><span id="code"></span><button id="cp">Copiar código</button></div><small>Compártelo con tus amigos. Plazas: <span id="slots"></span>/4</small></div>
+ <div class="box" id="pls"></div>
+ <div class="box"><b>Reglas de la partida</b>
+  <div class="row" style="margin-top:8px">
+   <label>Eliminación a más de <select id="c_limit"><option>50<option>70<option>100</select> puntos</label>
+   <label>Cierre con hasta <select id="c_closeMax"><option>0<option>1<option>2<option>3<option>4<option>5</select> pts sueltos</label>
+   <label>Chinchón <select id="c_chin"><option value="win">gana la partida<option value="plus50">rivales +50</select></label>
+   <label><input type="checkbox" id="c_bonus" style="width:auto"> −10 al cerrar con 0</label>
+   <label>Temporizador <select id="c_timer"><option value="0">sin límite<option value="30">30 s<option value="60">60 s</select></label>
+  </div><div id="cfgro" style="display:none"></div></div>
+ <div class="row"><button id="bs">Empezar partida</button><button class="sec" onclick="rules.showModal()">Reglas</button><button class="sec" id="bl">Salir</button></div>
+</section>
+
+<section class="scr" id="game">
+ <div class="row" style="justify-content:space-between"><span id="info"></span><span><button class="sec" id="snd">🔊</button> <button class="sec" onclick="rules.showModal()">Reglas</button> <button class="sec" id="bl2">Salir</button></span></div>
+ <div id="opp"></div>
+ <div id="mid"><div id="deck" class="c big back"></div><div id="disc"></div></div>
+ <div id="msg"></div><div id="acts"><button id="bd">Descartar</button><button id="bk">Cerrar ronda</button></div>
+ <div id="hand"></div><div id="me" style="text-align:center"></div><div id="logp"></div>
+</section>
+<div id="res"><div id="resb"></div></div>
+
+<dialog id="rules"><h3>Reglas</h3><p>40 cartas (sin 8 ni 9). Cada jugador recibe 7. En tu turno roba del mazo o del descarte y descarta una carta (no puedes descartar la que acabas de coger del descarte).</p>
+<p><b>Combinaciones:</b> grupos de 3–4 cartas del mismo valor, o escaleras de 3+ cartas del mismo palo (orden 1…7, sota, caballo, rey).</p>
+<p><b>Puntos:</b> as 1, del 2 al 7 su valor, figuras 10. Se cierra tras descartar si las cartas sueltas suman el máximo elegido o menos. Al cerrar se revelan las manos y cada uno suma sus puntos sueltos.</p>
+<p><b>Chinchón:</b> 7 cartas en escalera del mismo palo. Según las reglas: gana la partida o los rivales suman 50. Quien supera el límite queda eliminado; gana el último o quien tenga menos puntos.</p><button onclick="rules.close()">Cerrar</button></dialog>
+
+<script>
+const $=id=>document.getElementById(id),L=['1','2','3','4','5','6','7','S','C','R'],SY=['●','♥','⚔','♣'];
+let ws,S=null,sel=null,snd=true,prevHand=[],AC;
+const toast=m=>{const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(t.h);t.h=setTimeout(()=>t.style.display='none',3200)};
+const tx=o=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify(o));else toast('Sin conexión con el servidor')};
+function beep(f){if(!snd)return;try{AC=AC||new AudioContext();const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;g.gain.value=.05;o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.08)}catch(e){}}
+function conn(){
+ ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+ ws.onopen=()=>{$('cn').className='on';$('cn').textContent='Conectado';const s=JSON.parse(localStorage.chin||'null');if(s)tx({t:'resume',...s})};
+ ws.onclose=()=>{$('cn').className='';$('cn').textContent='Reconectando…';setTimeout(conn,1500)};
+ ws.onmessage=e=>{const m=JSON.parse(e.data);
+  if(m.t==='joined')localStorage.chin=JSON.stringify({code:m.code,token:m.token});
+  else if(m.t==='err'){toast(m.m);if(m.fatal){localStorage.removeItem('chin');S=null;show('home')}}
+  else if(m.t==='state'){S=m;render()}}}
+const show=id=>document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));
+const card=(id,x='')=>`<div class="c s${Math.floor(id/10)} ${x}" data-id="${id}"><span>${L[id%10]}</span><b>${SY[Math.floor(id/10)]}</b><span>${L[id%10]}</span></div>`;
+const name=id=>S.pl.find(p=>p.id===id).name;
+$('bc').onclick=()=>tx({t:'create',name:$('nm').value});
+$('bj').onclick=()=>tx({t:'join',name:$('nm').value,code:$('cd').value});
+$('cp').onclick=()=>navigator.clipboard.writeText(S.code).then(()=>toast('Código copiado'),()=>toast('Código: '+S.code));
+$('bs').onclick=()=>tx({t:'start'});
+const leave=()=>{tx({t:'leave'});localStorage.removeItem('chin');S=null;show('home')};$('bl').onclick=$('bl2').onclick=leave;
+$('snd').onclick=()=>{snd=!snd;$('snd').textContent=snd?'🔊':'🔇'};
+['limit','closeMax','chin','bonus','timer'].forEach(k=>$('c_'+k).onchange=()=>{const v=k=>{const e=$('c_'+k);return k==='bonus'?e.checked:(k==='chin'?e.value:+e.value)};tx({t:'cfg',limit:v('limit'),closeMax:v('closeMax'),chin:v('chin'),bonus:v('bonus'),timer:v('timer')})});
+$('deck').onclick=()=>{if(S&&S.turn===S.you&&!S.dr){tx({t:'draw',from:'deck'});beep(300)}};
+$('disc').onclick=()=>{if(S&&S.turn===S.you&&!S.dr){tx({t:'draw',from:'discard'});beep(300)}};
+$('bd').onclick=()=>{if(sel!=null){tx({t:'discard',id:sel});beep(220);sel=null}};
+$('bk').onclick=()=>{if(sel!=null){tx({t:'close',id:sel});sel=null}};
+$('hand').onclick=e=>{const c=e.target.closest('.c');if(c)sel=sel===+c.dataset.id?null:+c.dataset.id,render()};
+$('resb').onclick=e=>{if(e.target.dataset.a)tx({t:e.target.dataset.a})};
+setInterval(()=>{if(S&&S.dl&&S.phase==='play')$('info').textContent=info()},500);
+const info=()=>`Sala ${S.code} · Ronda ${S.round}`+(S.dl?` · ${Math.max(0,Math.round((S.dl-Date.now())/1000))} s`:'');
+function render(){
+ const host=S.host===S.you;
+ if(S.phase==='lobby'){show('lobby');$('code').textContent=S.code;$('slots').textContent=S.pl.length;
+  $('pls').innerHTML=S.pl.map(p=>`<div class="pl ${p.on?'':'off'}"><span>${p.name}${p.id===S.host?' (creador)':''}${p.id===S.you?' (tú)':''}</span><span>${p.on?'conectado':'desconectado'}</span></div>`).join('');
+  for(const k of ['limit','closeMax','chin','timer'])$('c_'+k).value=S.cfg[k];$('c_bonus').checked=S.cfg.bonus;
+  document.querySelectorAll('#lobby select,#c_bonus').forEach(e=>e.disabled=!host);
+  $('bs').style.display=host?'':'none';$('bs').disabled=S.pl.filter(p=>p.on).length<2;return}
+ show('game');const my=S.turn===S.you;
+ $('info').textContent=info();
+ $('opp').innerHTML=S.pl.filter(p=>p.id!==S.you).map(p=>`<div class="o ${p.id===S.turn?'t':''} ${p.out?'x':''} ${p.on?'':'off'}"><b>${p.name}</b><br>${p.score} pts · ${p.n} cartas${p.on?'':' · desconectado'}</div>`).join('');
+ $('deck').innerHTML='<span></span><span></span>';$('disc').innerHTML=S.top!=null?card(S.top,'big'):'';
+ const h=[...S.hand].sort((a,b)=>a-b);
+ $('hand').innerHTML=h.map(id=>card(id,(id===sel?'sel ':'')+(prevHand.length&&!prevHand.includes(id)?'new':''))).join('');prevHand=S.hand;
+ if(sel!=null&&!S.hand.includes(sel))sel=null;
+ const meOut=S.pl.find(p=>p.id===S.you).out;
+ $('msg').textContent=S.phase!=='play'?'':meOut?'Estás eliminado':!my?`Turno de ${name(S.turn)}`:!S.dr?'Tu turno: roba del mazo o del descarte':sel==null?'Selecciona una carta para descartar':S.cl.includes(sel)?'Puedes cerrar con esta carta':'Descarta, o elige otra para cerrar';
+ $('bd').disabled=!(my&&S.dr&&sel!=null);$('bk').disabled=!(my&&S.dr&&sel!=null&&S.cl.includes(sel));
+ $('bk').title=$('bk').disabled?'No puedes cerrar todavía':'';
+ const me=S.pl.find(p=>p.id===S.you);$('me').textContent=`${me.name}: ${me.score} pts`;$('logp').innerHTML=S.log.slice(-4).join('<br>');
+ if(my&&!S.dr&&S.phase==='play')beep(520);
+ const R=$('res');
+ if(S.res&&(S.phase==='roundEnd'||S.phase==='over')){R.style.display='block';const o=S.phase==='over';
+  $('resb').innerHTML=`<h2>${o?'Fin de la partida':'Fin de la ronda'}</h2><p>${S.res.closer} cierra${S.res.chin?' con ¡CHINCHÓN!':''}.</p>`+
+  S.res.rows.map(r=>`<div class="box"><b>${r.name}</b>: ${r.pts} sueltos → ${r.add>0?'+':''}${r.add} · total ${r.total}${r.out?' · eliminado':''}<br>${r.g.map(g=>`<span class="m">${g.map(i=>card(i)).join('')}</span>`).join('')}${r.u.map(i=>card(i)).map(c=>`<span class="m" style="border-color:#fff4">${c}</span>`).join('')}</div>`).join('')+
+  (o?`<h3>🏆 Ganador: ${name(S.win)}</h3>`+[...S.pl].sort((a,b)=>a.score-b.score).map((p,i)=>`<div class="pl"><span>${i+1}. ${p.name}</span><span>${p.score} pts${p.out?' (eliminado)':''}</span></div>`).join('')+(host?'<p><button data-a="again">Jugar otra vez</button></p>':'<p>Esperando al creador…</p>'):(host?'<p><button data-a="next">Siguiente ronda</button></p>':'<p>Esperando al creador…</p>'));
+  if(!R.dataset.s){beep(660);R.dataset.s=1}}
+ else{R.style.display='none';R.dataset.s=''}}
+conn();
+</script></body></html>

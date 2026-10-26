@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+:root {
+  --felt: #134e32;
+  --felt-dark: #0a291a;
+  --gold: #f59e0b;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--felt-dark);
+  color: #f8fafc;
+  overflow-x: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Card back pattern representing classic Spanish deck */
+.card-back-pattern {
+  background: 
+    radial-gradient(circle at 50% 50%, #881337 20%, transparent 21%),
+    radial-gradient(circle at 0% 0%, #4c0519 35%, transparent 36%),
+    radial-gradient(circle at 100% 0%, #4c0519 35%, transparent 36%),
+    radial-gradient(circle at 0% 100%, #4c0519 35%, transparent 36%),
+    radial-gradient(circle at 100% 100%, #4c0519 35%, transparent 36%),
+    repeating-linear-gradient(45deg, #701a2b 0, #701a2b 4px, #581020 4px, #581020 8px);
+  background-size: 20px 20px, 20px 20px, 20px 20px, 20px 20px, 20px 20px, 100% 100%;
+}
+
+/* Felt table background */
+.felt-table {
+  background: radial-gradient(ellipse at 50% 45%, #165b3b 0%, #0d3824 60%, #061c12 100%);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
